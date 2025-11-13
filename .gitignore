@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Backup files
+*.backup
+
+# JSON data files (opcional - remova se quiser versionar os sorteios salvos)
+grupos_salvos.json
+
+# macOS
+.DS_Store

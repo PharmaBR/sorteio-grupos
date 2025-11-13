@@ -502,14 +502,23 @@ def main():
                         f"📌 {resultado['aluno']} - {resultado['sorteio_nome']} (Grupo {resultado['numero_grupo']})",
                         expanded=True
                     ):
-                        col1, col2, col3 = st.columns(3)
-                        
-                        with col1:
-                            st.metric("Sorteio", resultado['sorteio_nome'])
-                        with col2:
-                            st.metric("Data", resultado['data'])
-                        with col3:
-                            st.metric("Tipo", resultado['tipo_grupo'])
+                        # Mostrar informações básicas
+                        if is_authenticated:
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                st.metric("Sorteio", resultado['sorteio_nome'])
+                            with col2:
+                                st.metric("Data", resultado['data'])
+                            with col3:
+                                st.metric("Tipo", resultado['tipo_grupo'])
+                        else:
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.metric("Sorteio", resultado['sorteio_nome'])
+                            with col2:
+                                st.metric("Grupo", resultado['numero_grupo'])
                         
                         st.markdown(f"### 🎯 Grupo {resultado['numero_grupo']}")
                         st.markdown("**Membros do grupo:**")
@@ -527,48 +536,49 @@ def main():
             else:
                 st.warning(f"❌ Nenhum resultado encontrado para '{nome_busca}'")
         
-        # Listar todos os sorteios salvos
-        st.markdown("---")
-        st.subheader("📋 Todos os Sorteios Salvos")
-        
-        sorteios = carregar_grupos()
-        
-        if sorteios:
-            st.info(f"Total de sorteios salvos: {len(sorteios)}")
+        # Listar todos os sorteios salvos - APENAS PARA AUTENTICADOS
+        if is_authenticated:
+            st.markdown("---")
+            st.subheader("📋 Todos os Sorteios Salvos")
             
-            for sorteio in reversed(sorteios):  # Mostrar os mais recentes primeiro
-                with st.expander(f"📁 {sorteio['nome']} - {sorteio['data']}", expanded=False):
-                    col1, col2 = st.columns([3, 1])
-                    
-                    with col1:
-                        st.markdown(f"**ID:** {sorteio['id']}")
-                        st.markdown(f"**Data:** {sorteio['data']}")
+            sorteios = carregar_grupos()
+            
+            if sorteios:
+                st.info(f"Total de sorteios salvos: {len(sorteios)}")
+                
+                for sorteio in reversed(sorteios):  # Mostrar os mais recentes primeiro
+                    with st.expander(f"📁 {sorteio['nome']} - {sorteio['data']}", expanded=False):
+                        col1, col2 = st.columns([3, 1])
                         
-                        total_grupos = len(sorteio['grupos_automaticos']) + len(sorteio['grupos_manuais'])
-                        total_alunos = sum(len(g) for g in sorteio['grupos_automaticos']) + sum(len(g) for g in sorteio['grupos_manuais'])
+                        with col1:
+                            st.markdown(f"**ID:** {sorteio['id']}")
+                            st.markdown(f"**Data:** {sorteio['data']}")
+                            
+                            total_grupos = len(sorteio['grupos_automaticos']) + len(sorteio['grupos_manuais'])
+                            total_alunos = sum(len(g) for g in sorteio['grupos_automaticos']) + sum(len(g) for g in sorteio['grupos_manuais'])
+                            
+                            st.markdown(f"**Total de grupos:** {total_grupos}")
+                            st.markdown(f"**Total de alunos:** {total_alunos}")
                         
-                        st.markdown(f"**Total de grupos:** {total_grupos}")
-                        st.markdown(f"**Total de alunos:** {total_alunos}")
-                    
-                    with col2:
-                        if st.button(f"🗑️ Deletar", key=f"del_{sorteio['id']}", type="secondary"):
-                            deletar_sorteio(sorteio['id'])
-                            st.success(f"Sorteio '{sorteio['nome']}' deletado!")
-                            st.rerun()
-                    
-                    # Mostrar grupos manuais
-                    if sorteio['grupos_manuais']:
-                        st.markdown("### 📌 Grupos Manuais")
-                        for idx, grupo in enumerate(sorteio['grupos_manuais']):
-                            st.markdown(f"**Grupo Manual {idx + 1}:** {', '.join(grupo)}")
-                    
-                    # Mostrar grupos automáticos
-                    if sorteio['grupos_automaticos']:
-                        st.markdown("### 🎲 Grupos Automáticos")
-                        for idx, grupo in enumerate(sorteio['grupos_automaticos']):
-                            st.markdown(f"**Grupo {idx + 1}:** {', '.join(grupo)}")
-        else:
-            st.info("📭 Nenhum sorteio salvo ainda. Faça um sorteio e clique em 'Salvar Sorteio'!")
+                        with col2:
+                            if st.button(f"🗑️ Deletar", key=f"del_{sorteio['id']}", type="secondary"):
+                                deletar_sorteio(sorteio['id'])
+                                st.success(f"Sorteio '{sorteio['nome']}' deletado!")
+                                st.rerun()
+                        
+                        # Mostrar grupos manuais
+                        if sorteio['grupos_manuais']:
+                            st.markdown("### 📌 Grupos Manuais")
+                            for idx, grupo in enumerate(sorteio['grupos_manuais']):
+                                st.markdown(f"**Grupo Manual {idx + 1}:** {', '.join(grupo)}")
+                        
+                        # Mostrar grupos automáticos
+                        if sorteio['grupos_automaticos']:
+                            st.markdown("### 🎲 Grupos Automáticos")
+                            for idx, grupo in enumerate(sorteio['grupos_automaticos']):
+                                st.markdown(f"**Grupo {idx + 1}:** {', '.join(grupo)}")
+            else:
+                st.info("📭 Nenhum sorteio salvo ainda. Faça um sorteio e clique em 'Salvar Sorteio'!")
     
     with tab4:
         if not is_authenticated:
